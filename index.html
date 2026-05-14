@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LESTRAMK Bot — Enterprise Telegram Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #8B6914;
+    --black: #0A0A0A;
+    --black2: #111111;
+    --black3: #1A1A1A;
+    --black4: #242424;
+    --white: #F5F0E8;
+    --white-dim: #A09880;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'Cormorant Garamond', serif;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 1.2rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(10,10,10,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    z-index: 100;
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+  }
+
+  .nav-logo span { color: var(--white); }
+
+  nav a {
+    color: var(--white-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  nav a:hover { color: var(--gold); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 8rem 2rem 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.8s forwards 0.2s;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 12vw, 8rem);
+    line-height: 0.95;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+    opacity: 0;
+    animation: fadeUp 0.8s forwards 0.4s;
+  }
+
+  .hero h1 span { color: var(--gold); }
+
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    font-style: italic;
+    color: var(--white-dim);
+    margin-bottom: 2.5rem;
+    max-width: 500px;
+    opacity: 0;
+    animation: fadeUp 0.8s forwards 0.6s;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeUp 0.8s forwards 0.8s;
+  }
+
+  .btn-gold {
+    background: var(--gold);
+    color: var(--black);
+    padding: 0.9rem 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-block;
+  }
+
+  .btn-gold:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--gold);
+    padding: 0.9rem 2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--gold);
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-block;
+  }
+
+  .btn-outline:hover {
+    background: rgba(201,168,76,0.1);
+    transform: translateY(-2px);
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    margin: 0;
+  }
+
+  /* ── STATS BAR ── */
+  .stats {
+    background: var(--black2);
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(201,168,76,0.1);
+    border-bottom: 1px solid rgba(201,168,76,0.1);
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    padding: 5rem 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .section-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    letter-spacing: 0.05em;
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+
+  .section-title span { color: var(--gold); }
+
+  .section-desc {
+    font-size: 1.1rem;
+    color: var(--white-dim);
+    font-style: italic;
+    max-width: 500px;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+
+  /* ── FEATURES GRID ── */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.1);
+    margin-bottom: 2rem;
+  }
+
+  .feature {
+    background: var(--black2);
+    padding: 2rem;
+    transition: background 0.3s;
+  }
+
+  .feature:hover { background: var(--black3); }
+
+  .feature-icon {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .feature h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .feature p {
+    font-size: 0.95rem;
+    color: var(--white-dim);
+    line-height: 1.6;
+  }
+
+  /* ── PRICING ── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.1);
+  }
+
+  .price-card {
+    background: var(--black2);
+    padding: 2.5rem 2rem;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .price-card:hover { background: var(--black3); }
+
+  .price-card.featured {
+    background: var(--black3);
+    border: 1px solid var(--gold);
+  }
+
+  .price-badge {
+    position: absolute;
+    top: -1px;
+    right: 2rem;
+    background: var(--gold);
+    color: var(--black);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+  }
+
+  .price-tier {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--white-dim);
+    margin-bottom: 0.5rem;
+  }
+
+  .price-amount {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.5rem;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 0.2rem;
+  }
+
+  .price-period {
+    font-size: 0.85rem;
+    color: var(--white-dim);
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+
+  .price-features {
+    list-style: none;
+    margin-bottom: 2rem;
+  }
+
+  .price-features li {
+    font-size: 0.95rem;
+    color: var(--white-dim);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .price-features li::before {
+    content: '✦';
+    color: var(--gold);
+    font-size: 0.6rem;
+    flex-shrink: 0;
+  }
+
+  .price-features li.no {
+    opacity: 0.35;
+    text-decoration: line-through;
+  }
+
+  .price-features li.no::before { color: var(--white-dim); }
+
+  /* ── COMMANDS SECTION ── */
+  .commands-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.1);
+    margin-bottom: 3rem;
+  }
+
+  .cmd-group {
+    background: var(--black2);
+    padding: 1.5rem;
+  }
+
+  .cmd-group h4 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .cmd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--white-dim);
+    padding: 0.3rem 0;
+    display: block;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  /* ── CONTACT ── */
+  .contact-box {
+    background: var(--black2);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+
+  .contact-box h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-box p {
+    color: var(--white-dim);
+    font-style: italic;
+    margin-bottom: 2rem;
+  }
+
+  .contact-links {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--black2);
+    border-top: 1px solid rgba(201,168,76,0.1);
+    padding: 2rem;
+    text-align: center;
+  }
+
+  footer .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.15em;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  footer p {
+    font-size: 0.8rem;
+    color: var(--white-dim);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 600px) {
+    nav a { display: none; }
+    .stats { gap: 1.5rem; }
+    .hero-btns { flex-direction: column; align-items: center; }
+    .btn-gold, .btn-outline { width: 100%; text-align: center; }
+    section { padding: 3rem 1.2rem; }
+    .contact-links { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">LESTRAMK<span>BOT</span></div>
+  <a href="#pricing">Pricing</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">⬡ Enterprise Telegram Management</div>
+  <h1>YOUR GROUP.<br><span>OUR</span> BOT.</h1>
+  <p class="hero-sub">Built for businesses that can't afford chaos in their communities.</p>
+  <div class="hero-btns">
+    <a href="https://t.me/Lestamkbot" class="btn-gold" target="_blank">Add to Telegram</a>
+    <a href="https://t.me/Girltalisha" class="btn-outline" target="_blank">Subscribe Now</a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Tier Plans</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">24/7</div>
+    <div class="stat-label">Uptime</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">15+</div>
+    <div class="stat-label">Commands</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">∞</div>
+    <div class="stat-label">Spam Blocked</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="reveal">
+    <div class="section-tag">// What We Do</div>
+    <h2 class="section-title">BUILT FOR <span>SERIOUS</span> GROUPS</h2>
+    <p class="section-desc">Not a free bot with 3 commands. A full group management system built in Nairobi for African businesses.</p>
+  </div>
+  <div class="features reveal">
+    <div class="feature">
+      <div class="feature-icon">🛡</div>
+      <h3>Auto Moderation</h3>
+      <p>Multilingual spam detection across English, Swahili, Arabic, French. Scams, explicit content, hate speech — all caught automatically.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">⚠️</div>
+      <h3>Warning System</h3>
+      <p>3-strike system with persistent storage. Warnings survive bot restarts. Third strike = automatic ban. No manual work.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📊</div>
+      <h3>Analytics Reports</h3>
+      <p>Track joins, leaves, spam caught, messages scanned and retention rate. Know exactly what's happening in your group.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">📢</div>
+      <h3>Scheduled Broadcasts</h3>
+      <p>Set broadcasts to go out at exact times. Daily announcements, reminders, promotions — automated completely.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🤖</div>
+      <h3>Custom Auto-Replies</h3>
+      <p>Set keywords and responses specific to your business. Bot answers FAQs instantly without you lifting a finger.</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🎨</div>
+      <h3>Custom Branding</h3>
+      <p>Enterprise clients can white-label the bot entirely. Your company name, your group, your identity.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="reveal">
+    <div class="section-tag">// Plans</div>
+    <h2 class="section-title">SIMPLE <span>PRICING</span></h2>
+    <p class="section-desc">Pay via Mpesa. Active within 1 hour. Cancel anytime — no contracts.</p>
+  </div>
+  <div class="pricing-grid reveal">
+
+    <!-- STARTER -->
+    <div class="price-card">
+      <div class="price-tier">🥉 Starter</div>
+      <div class="price-amount">200</div>
+      <div class="price-period">KES per month · 1 group</div>
+      <ul class="price-features">
+        <li>Spam filter & auto-moderation</li>
+        <li>Ban, kick, mute, warn system</li>
+        <li>Welcome & goodbye messages</li>
+        <li>Basic commands (/rules, /id, /ping)</li>
+        <li>3-strike auto-ban system</li>
+        <li class="no">Anti-link protection</li>
+        <li class="no">Scheduled broadcasts</li>
+        <li class="no">Analytics reports</li>
+      </ul>
+      <a href="https://t.me/Girltalisha" class="btn-outline" target="_blank" style="width:100%;text-align:center;">Get Starter</a>
+    </div>
+
+    <!-- BUSINESS -->
+    <div class="price-card featured">
+      <div class="price-badge">Most Popular</div>
+      <div class="price-tier">🥈 Business</div>
+      <div class="price-amount">500</div>
+      <div class="price-period">KES per month · 3 groups</div>
+      <ul class="price-features">
+        <li>Everything in Starter</li>
+        <li>Anti-link protection</li>
+        <li>Scheduled broadcasts</li>
+        <li>Custom keyword auto-replies (5)</li>
+        <li>Priority support via @Girltalisha</li>
+        <li class="no">Analytics reports</li>
+        <li class="no">Media filtering</li>
+        <li class="no">Custom branding</li>
+      </ul>
+      <a href="https://t.me/Girltalisha" class="btn-gold" target="_blank" style="width:100%;text-align:center;">Get Business</a>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="price-card">
+      <div class="price-tier">🥇 Enterprise</div>
+      <div class="price-amount">1,200</div>
+      <div class="price-period">KES per month · Unlimited groups</div>
+      <ul class="price-features">
+        <li>Everything in Business</li>
+        <li>Full analytics & reports</li>
+        <li>Media & file filtering</li>
+        <li>Member data export</li>
+        <li>Custom bot branding</li>
+        <li>Unlimited custom auto-replies</li>
+        <li>Dedicated setup support</li>
+        <li>Unlimited groups</li>
+      </ul>
+      <a href="https://t.me/Girltalisha" class="btn-outline" target="_blank" style="width:100%;text-align:center;">Get Enterprise</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- COMMANDS -->
+<section id="commands">
+  <div class="reveal">
+    <div class="section-tag">// Commands</div>
+    <h2 class="section-title">FULL <span>COMMAND</span> LIST</h2>
+  </div>
+  <div class="commands-grid reveal">
+    <div class="cmd-group">
+      <h4>👤 Everyone</h4>
+      <span class="cmd">/start — Main menu</span>
+      <span class="cmd">/help — All commands</span>
+      <span class="cmd">/about — About LESTRAMK</span>
+      <span class="cmd">/rules — Group rules</span>
+      <span class="cmd">/id — Your Telegram ID</span>
+      <span class="cmd">/hey — Say hey</span>
+      <span class="cmd">/ping — Bot latency</span>
+      <span class="cmd">/subscribe — View plans</span>
+      <span class="cmd">/mystatus — Your plan</span>
+    </div>
+    <div class="cmd-group">
+      <h4>🛡 Admin Only</h4>
+      <span class="cmd">/ban — Ban a user</span>
+      <span class="cmd">/kick — Kick a user</span>
+      <span class="cmd">/mute — Mute a user</span>
+      <span class="cmd">/unmute — Unmute a user</span>
+      <span class="cmd">/warn — Warn a user</span>
+      <span class="cmd">/unwarn — Remove warning</span>
+      <span class="cmd">/warnings — Check warnings</span>
+      <span class="cmd">/broadcast — Send message</span>
+      <span class="cmd">/clean — Delete messages</span>
+    </div>
+    <div class="cmd-group">
+      <h4>🥈 Business+</h4>
+      <span class="cmd">/addreply — Add auto-reply</span>
+      <span class="cmd">/removereply — Remove reply</span>
+      <span class="cmd">/schedule — Schedule broadcast</span>
+    </div>
+    <div class="cmd-group">
+      <h4>🥇 Enterprise</h4>
+      <span class="cmd">/analytics — Group stats</span>
+      <span class="cmd">/exportmembers — Export list</span>
+      <span class="cmd">/setbranding — Custom name</span>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-box reveal">
+    <h2>READY TO <span style="color:var(--gold)">UPGRADE</span> YOUR GROUP?</h2>
+    <p>Pay via Mpesa. Active within 1 hour. Built in Nairobi by LESTRAMK.</p>
+    <div class="contact-links">
+      <a href="https://t.me/Lestamkbot" class="btn-gold" target="_blank">Add Bot to Group</a>
+      <a href="https://t.me/Girltalisha" class="btn-outline" target="_blank">DM @Girltalisha</a>
+      <a href="mailto:leekingori54@gmail.com" class="btn-outline">Email Us</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">LESTRAMK</div>
+  <p>Built in Nairobi · leekingori54@gmail.com · @Girltalisha · lestramk.org</p>
+  <p style="margin-top:0.5rem;opacity:0.4;">© 2026 LESTRAMK. All rights reserved.</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+</script>
+</body>
+</html>
